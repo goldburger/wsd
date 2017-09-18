@@ -3,6 +3,7 @@ CMSC723 / INST725 / LING723 -- Fall 2016
 Project 1: Implementing Word Sense Disambiguation Systems
 """
 
+from collections import defaultdict
 
 """
  read one of train, dev, test subsets 
@@ -77,6 +78,10 @@ def run_bow_naivebayes_classifier(train_texts, train_targets, train_labels,
 	"""
 	pass
 
+# TODO: Currently loops through in same order; later change to use randomness
+def perceptron_select(size, counter):
+  return counter % size
+
 """
 Trains a perceptron model with bag of words features and computes the accuracy on the test set
 
@@ -86,10 +91,41 @@ The same thing applies to the reset of the parameters.
 """
 def run_bow_perceptron_classifier(train_texts, train_targets,train_labels, 
 				dev_texts, dev_targets,dev_labels, test_texts, test_targets, test_labels):
-	"""
-	**Your final classifier implementation of part 3 goes here**
-	"""
-	pass
+  """
+  **Your final classifier implementation of part 3 goes here**
+  """
+  senses = set(train_labels)
+
+  # Create beginning structure for weights, with all weights zero
+  theta = dict()
+  for sense in senses:
+    theta[sense] = defaultdict(int)
+
+  # Create bags of words for training set from original lists of sentence words
+  train_bow = []
+  for text in train_texts:
+    next_bow = defaultdict(int)
+    for word in text:
+      next_bow[word] += 1
+    train_bow.append(next_bow)
+  print train_bow[0]
+
+  # Main perceptron loop
+  counter = 0
+  while (True): # TODO: Later change to be while (accuracy not decreasing) or similar
+    index = perceptron_select(len(train_texts), counter)
+    scoring = defaultdict(int)
+    for sense in senses:
+      for word in train_bow[index]:
+        scoring[sense] += train_bow[index][word] * theta[sense][word]
+    # Now get key for max value of scoring
+
+    #yhat = 
+
+    return
+    counter += 1
+
+  pass
 
 
 
@@ -131,7 +167,9 @@ if __name__ == "__main__":
     test_labels, test_targets, test_texts = read_dataset('test')
 
     #running the classifier
-    test_scores = run_naivebayes_classifier(train_texts, train_targets, train_labels, 
+    #test_scores = run_bow_naivebayes_classifier(train_texts, train_targets, train_labels, 
+		#		dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
+    test_scores = run_bow_perceptron_classifier(train_texts, train_targets, train_labels, 
 				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
 
-    print test_scores
+    #print test_scores
