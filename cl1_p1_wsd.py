@@ -4,6 +4,7 @@ Project 1: Implementing Word Sense Disambiguation Systems
 """
 
 from collections import defaultdict
+from random import shuffle
 
 """
  read one of train, dev, test subsets 
@@ -79,7 +80,7 @@ def run_bow_naivebayes_classifier(train_texts, train_targets, train_labels,
 	pass
 
 
-# Creates a bags of words for a set from the original lists of sentence words
+# Creates bags of words for a set from the original lists of sentence words
 def make_bow(texts):
   bow = []
   for text in texts:
@@ -89,15 +90,14 @@ def make_bow(texts):
     bow.append(next_bow)
   return bow
 
-# TODO: Currently loops through in same order; later change to use randomness
-def perceptron_select(size, counter):
-  return counter % size
+def perceptron_select(texts, counter):
+  return texts[counter % len(texts)]
 
 def calculate_accuracy(senses, theta, bow, labels):
   correct = 0
   incorrect = 0
   for i in range(0, len(bow)):
-    scoring = defualtdict(int)
+    scoring = defaultdict(int)
     for sense in senses:
       for word in bow[i]:
         scoring[sense] += bow[i][word] * theta[sense][word]
@@ -137,14 +137,24 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
 
   # Main perceptron loop
   counter = 0
-  while (True): # TODO: Later change to be while (accuracy not decreasing) or similar
-    index = perceptron_select(len(train_texts), counter)
+  while (True): # TODO: Later change to be while (accuracy not decreasing) or similar; NEEDS STOPPING CONDITION!!!!
+
+    # Currently evaluates accuracy on training set after rolls through whole training set once
+    if (counter % len(train_texts) == 0):
+      random.shuffle(train_texts) # TODO: Need a copy of train_texts; Need to make sure indices between texts and labels remain lining up
+      theta_temp = dict()
+      for sense in senses:
+        theta_temp[sense] = defaultdict(int)
+        for word in m[sense]:
+          theta_temp[sense][word] = m[sense][word] / counter
+      print "Current accuracy on training set: " + str(calculate_accuracy(senses, theta, train_bow, train_labels))
+    cur_inst = perceptron_select(train_texts, counter)
 
     # Obtain predicted from argmax of scores for each class
     scoring = defaultdict(int)
     for sense in senses:
-      for word in train_bow[index]:
-        scoring[sense] += train_bow[index][word] * theta[sense][word]
+      for word in cur_inst:
+        scoring[sense] += cur_inst[word] * theta[sense][word]
     v = list(scoring.values())
     k = list(scoring.keys())
     yhat = k[v.index(max(v))]
@@ -152,23 +162,22 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
     # If prediction is wrong, update weight vector
     correct_label = train_labels[index]
     if (yhat != correct_label):
-      for word in train_bow[index]:
+      for word in cur_inst:
         # Updates for scores of predicted class
         m[yhat][word] += theta[yhat][word] * (counter - m_last_updated[yhat][word])
         m_last_updated[yhat][word] = counter
-        theta[yhat][word] -= train_bow[index][word]
-        m[yhat][word] -= train_bow[index][word]
+        theta[yhat][word] -= cur_inst[word]
+        m[yhat][word] -= cur_inst[word]
 
         # Updates for scores of actual class
         m[correct_label][word] += theta[correct_label][word] * (counter - m_last_updated[correct_label][word])
         m_last_updated[correct_label][word] = counter
-        theta[correct_label][word] += train_bow[index][word]
-        m[correct_label][word] += train_bow[index][word]
+        theta[correct_label][word] += cur_inst[word]
+        m[correct_label][word] += cur_inst[word]
 
     counter += 1
 
-  # Need to use m_last_updated properly when break out of loop
-  # TODO: scoring on test set based on weights and such
+  # TODO: Need to use all value accumulations based on m_last_updated properly when break out of loop!!
 
   # Obtain final weights from running average
   for sense in senses:
