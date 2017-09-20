@@ -78,9 +78,37 @@ def run_bow_naivebayes_classifier(train_texts, train_targets, train_labels,
 	"""
 	pass
 
+
+# Creates a bags of words for a set from the original lists of sentence words
+def make_bow(texts):
+  bow = []
+  for text in texts:
+    next_bow = defaultdict(int)
+    for word in text:
+      next_bow[word] += 1
+    bow.append(next_bow)
+  return bow
+
 # TODO: Currently loops through in same order; later change to use randomness
 def perceptron_select(size, counter):
   return counter % size
+
+def calculate_accuracy(senses, theta, bow, labels):
+  correct = 0
+  incorrect = 0
+  for i in range(0, len(bow)):
+    scoring = defualtdict(int)
+    for sense in senses:
+      for word in bow[i]:
+        scoring[sense] += bow[i][word] * theta[sense][word]
+    v = list(scoring.values())
+    k = list(scoring.keys())
+    label = k[v.index(max(v))]
+    if (label == labels[i]):
+      correct += 1
+    else:
+      incorrect += 1
+  return correct / (correct + incorrect)
 
 """
 Trains a perceptron model with bag of words features and computes the accuracy on the test set
@@ -89,8 +117,8 @@ train_texts, train_targets, train_labels are as described in read_dataset above
 The same thing applies to the reset of the parameters.
 
 """
-def run_bow_perceptron_classifier(train_texts, train_targets,train_labels, 
-				dev_texts, dev_targets,dev_labels, test_texts, test_targets, test_labels):
+def run_bow_perceptron_classifier(train_texts, train_targets, train_labels, 
+				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels):
   """
   **Your final classifier implementation of part 3 goes here**
   """
@@ -98,35 +126,57 @@ def run_bow_perceptron_classifier(train_texts, train_targets,train_labels,
 
   # Create beginning structure for weights, with all weights zero
   theta = dict()
+  m = dict()
+  m_last_updated = dict()
   for sense in senses:
     theta[sense] = defaultdict(int)
+    m[sense] = defaultdict(int)
+    m_last_updated[sense] = defaultdict(int)
 
-  # Create bags of words for training set from original lists of sentence words
-  train_bow = []
-  for text in train_texts:
-    next_bow = defaultdict(int)
-    for word in text:
-      next_bow[word] += 1
-    train_bow.append(next_bow)
-  print train_bow[0]
+  train_bow = make_bow(train_texts)
 
   # Main perceptron loop
   counter = 0
   while (True): # TODO: Later change to be while (accuracy not decreasing) or similar
     index = perceptron_select(len(train_texts), counter)
+
+    # Obtain predicted from argmax of scores for each class
     scoring = defaultdict(int)
     for sense in senses:
       for word in train_bow[index]:
         scoring[sense] += train_bow[index][word] * theta[sense][word]
-    # Now get key for max value of scoring
+    v = list(scoring.values())
+    k = list(scoring.keys())
+    yhat = k[v.index(max(v))]
+    
+    # If prediction is wrong, update weight vector
+    correct_label = train_labels[index]
+    if (yhat != correct_label):
+      for word in train_bow[index]:
+        # Updates for scores of predicted class
+        m[yhat][word] += theta[yhat][word] * (counter - m_last_updated[yhat][word])
+        m_last_updated[yhat][word] = counter
+        theta[yhat][word] -= train_bow[index][word]
+        m[yhat][word] -= train_bow[index][word]
 
-    #yhat = 
+        # Updates for scores of actual class
+        m[correct_label][word] += theta[correct_label][word] * (counter - m_last_updated[correct_label][word])
+        m_last_updated[correct_label][word] = counter
+        theta[correct_label][word] += train_bow[index][word]
+        m[correct_label][word] += train_bow[index][word]
 
-    return
     counter += 1
 
-  pass
+  # Need to use m_last_updated properly when break out of loop
+  # TODO: scoring on test set based on weights and such
 
+  # Obtain final weights from running average
+  for sense in senses:
+    for word in m[sense]:
+      theta[sense][word] = m[sense][word] / counter
+
+  # Use trained theta on test set and return
+  return calculate_accuracy(senses, theta, make_bow(test_texts), test_labels);
 
 
 """
