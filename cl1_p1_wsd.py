@@ -90,6 +90,19 @@ def make_bow(texts):
     bow.append(next_bow)
   return bow
 
+def get_predicted_labels(senses, theta, bow):
+  labels = []
+  for i in range(0, len(bow)):
+    scoring = defaultdict(int)
+    for sense in senses:
+      for word in bow[i]:
+        scoring[sense] += bow[i][word] * theta[sense][word]
+    v = list(scoring.values())
+    k = list(scoring.keys())
+    label = k[v.index(max(v))]
+    labels.append(label)
+  return labels
+
 def calculate_accuracy(senses, theta, bow, labels):
   correct = 0
   incorrect = 0
@@ -145,7 +158,7 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
   while (True): # TODO: Later change to be while (accuracy not decreasing) or similar; NEEDS STOPPING CONDITION!!!!
 
     # Currently evaluates accuracy on training set after rolls through whole training set once
-    if (counter % len(train_texts) == 0):
+    if (counter % len(train_texts) == 0 and counter > 0):
       m_temp = dict()
       theta_temp = dict()
       for sense in senses:
@@ -154,9 +167,11 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
         theta_temp[sense] = defaultdict(int)
         for word in m[sense]:
           m_temp[sense][word] = m[sense][word] + theta[sense][word] * (counter - m_last_updated[sense][word])
-          theta_temp[sense][word] = m_temp[sense][word] / counter # If buggy, replace m_temp with m and to undo
-      print "Current accuracy on training set: " + str(calculate_accuracy(senses, theta_temp, train_bow, train_labels))
-      print "Current accuracy on test set: " + str(calculate_accuracy(senses, theta_temp, test_bow, test_labels))
+          theta_temp[sense][word] = m_temp[sense][word] / counter
+      #print "Current accuracy on training set: " + str(calculate_accuracy(senses, theta_temp, train_bow, train_labels))
+      #print "Current accuracy on test set: " + str(calculate_accuracy(senses, theta_temp, test_bow, test_labels))
+      print "Result of eval on training set: " + str(eval(train_labels, get_predicted_labels(senses, theta_temp, train_bow)))
+      print "Result of eval on test labels vs gold labels: " + str(eval(test_labels, get_predicted_labels(senses, theta_temp, test_bow)))
       shuffle(indices)
     index = indices[counter % len(indices)]
 
