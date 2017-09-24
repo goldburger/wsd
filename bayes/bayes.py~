@@ -1,0 +1,26 @@
+import csv
+from collections import defaultdict
+
+# Constants
+WSD_TRAIN = '../data/wsd_train.txt'
+WSD_DEV = '../data/wsd_dev.txt'
+WSD_TEST = '../data/wsd_test.txt'
+
+# Functions
+
+# Non-module entry point:
+if __name__ == '__main__':
+    # get the list of ('class', 'training instance') pairs
+    with open(WSD_TRAIN, 'r') as f:
+        examples = list(csv.reader(f, delimiter='\t'))
+
+    # group by class (word sense)
+    classes_l = [e[0] for e in examples]
+    bigdocs = defaultdict(str)
+    for e in examples:
+        bigdocs[e[0]] = e[1] + ' '
+
+    # compute class probabilities
+    
+        
+    # compute word probabilities by class
