@@ -1,7 +1,7 @@
 Team: 
-1- 
-2- 
-3-
+1- Aquia Richburg
+2- Samuel Barham
+3- Matthew Goldberg
 
 Email: 
 
@@ -72,11 +72,11 @@ macro averaged =
 Part 3)
 
 1- 
-2- comma separated accuracies (e.g. 30,35,60): 
+2- comma separated accuracies (e.g. 30,35,60): 0.83321847002067539,0.91592005513439012,0.95210199862164024,0.97381116471399032,0.98828394210889037,0.99207443142660234,0.9955203308063405
 3- classifier f-measures on the test set:
-micro averaged = 
-macro averaged = 
-4- 
+micro averaged = 0.82825040128410909
+macro averaged = 0.72802765562479499
+4- Overall, the perceptron follows the averaged perceptron pseudocode provided in the lecture slides. However, the following design decisions were made for coding the perceptron. First, the order in which training set sentences are selected was the following: the first time that the perceptron runs, each training set sentence is processed in the original order of the train_texts list; after each sentence has been processed, a list of indices is randomized such that the perceptron will subsequently learn by examining each training sentence once in the new randomized order. Hence, the training set is processed repeatedly in a random order. A second implementation choice was made in representing the sparse vectors of the bags of words. This was implemented using Python defaultdicts of ints, which allowed implicit representation of counts of zero for words in the vocabulary not appearing in a sentence for a given bag of words. Similarly, zero-valued entries in the weight vector theta were also implict due to use of a defaultdict for theta as well. The use of a constant-time access structure like a dict also allowed for fast accesses to bags of words when obtaining the score for a given sentence. The choice for when to stop the perceptron was based on when the accuracy on the test set would begin to decrease. After each time of training on and running through the whole training set, the perceptron would calculate its accuracy on the test set. If the values had decreased since the last check on the test set, the perceptron would roll back to the previous, maximal result for the training set. Finally, an implementation choice was made in how the values for the vectors theta and m (using the names from perceptron slide 16) were updated -- rather than updating every vocabulary word weight in m for each training example, it was noted that in the case of words not appearing in the currently examined bag of words, an update to their entry in m would only update with an unchanged entry of theta. Thus instead of doing such additions each iteration, for such entries of m a count is stored for how long it's been since the last update, and when that entry later changes the theta contribution is multiplied by the time since last update, before being added. This makes updates to m occur in time proportional to the sentence length and not the vocabulary, giving a signficant speedup.
 ---------------------------------------------------------------------------------
 Part 4)
 A) Feature A:
