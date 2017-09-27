@@ -216,7 +216,7 @@ def average_word_len(bow):
   return float(len_sum)/numwords
 
 # Helper function used for other extra feature
-def inverse_sentence_length(bow, maxlen):
+def inverse_sentence_len(bow, maxlen):
   sentence_len = 0
   for word in bow:
     sentence_len += bow[word]
@@ -248,8 +248,8 @@ The same thing applies to the reset of the parameters.
 def run_extended_bow_perceptron_classifier(train_texts, train_targets,train_labels, 
 				dev_texts, dev_targets,dev_labels, test_texts, test_targets, test_labels):
 
-  extra_1 = True
-  extra_2 = False
+  extra_1 = False
+  extra_2 = True
 
   senses = set(train_labels)
 
