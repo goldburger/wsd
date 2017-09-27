@@ -71,7 +71,7 @@ macro averaged =
 ---------------------------------------------------------------------------------
 Part 3)
 
-1- 
+1- cord_and:-1, text_and:1, cord_managed:-1, text_managed:1, cord_ah:-1, text_ah:1, cord_an:-1, text_an:1, cord_down:-1, text_down:1, cord_jean-jacques:-1, text_jean-jacques:1, cord_another:-1, text_another:1, cord_in:-1, text_in:1, cord_sits:-1, text_sits:1, cord_harp:-1, text_harp:1, cord_!:-1, text_!:1, cord_little:-1, text_little:1, cord_her:-2, text_her:2, cord_pet:-1, text_pet:1, cord_with:-1, text_with:1, cord_hauer:-1, text_hauer:1, cord_wordsworth:-1, text_wordsworth:1, cord_,:-3, text_,:3, cord_liberty:-1, text_liberty:1, cord_.:-1, text_.:1, cord_to:-2, text_to:2, cord_rolland:-1, text_rolland:1, cord_before:-1, text_before:1, cord_friend:-1, text_friend:1, cord_shows:-1, text_shows:1, cord_``:-1, text_``:1, cord_plank:-1, text_plank:1, cord_who:-1, text_who:1, cord_french:-1, text_french:1, cord_much-quoted:-1, text_much-quoted:1, cord_tied:-1, text_tied:1, cord_not:-1, text_not:1, cord_line:-1, text_line:1, cord_lady:-1, text_lady:1, cord_by:-1, text_by:1, cord_plucky:-1, text_plucky:1, cord_a:-1, text_a:1, cord_last:-1, text_last:1, cord_room:-1, text_room:1, cord_did:-1, text_did:1, cord_of:-1, text_of:1, cord_dog:-1, text_dog:1, cord_madame:-1, text_madame:1, cord_lafayette:-1, text_lafayette:1, cord_she:-1, text_she:1, cord_the:-2, text_the:2, cord_painting:-1, text_painting:1, cord_drawing:-1, text_drawing:1, cord_exquisite:-1, text_exquisite:1
 2- comma separated accuracies (e.g. 30,35,60): 0.83321847002067539,0.91592005513439012,0.95210199862164024,0.97381116471399032,0.98828394210889037,0.99207443142660234,0.9955203308063405
 3- classifier f-measures on the test set:
 micro averaged = 0.82825040128410909
