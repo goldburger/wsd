@@ -1,5 +1,6 @@
 import csv
 import math
+from nltk import word_tokenize
 from collections import defaultdict
 from collections import Counter
 from functools import reduce
@@ -10,7 +11,8 @@ WSD_DEV = '../data/wsd_dev.txt'
 WSD_TEST = '../data/wsd_test.txt'
 
 class Bayes:
-    def __init__(self, examples):
+    def __init__(self, train_texts, train_labels):
+        self.examples = zip(train_labels, train_texts)
         self.prior = dict()
         self.likelihood = dict()
         
@@ -20,8 +22,11 @@ class Bayes:
     
         self.bigdoc = defaultdict(list)
         for e in examples:
-            self.bigdoc[e[0]] += e[1].split(' ')
+            self.bigdoc[e[0]] += word_tokenize(e[1].lower())
 
+        self.class_counts = Counter(self.classes_l)
+        self.word_counts = {c: Counter(self.bigdoc[c]) for c in self.classes}
+            
     # Functions
     def train(self):
         self.compute_prior()
@@ -41,7 +46,7 @@ class Bayes:
         return math.log(n, 2)
 
     def predict(self, sentence):
-        words = sentence.split(' ')
+        words = sentence # word_tokenize(sentence.lower())
         best = 0
         prediction = 'None'
     
@@ -75,6 +80,10 @@ class Bayes:
 if __name__ == '__main__':
     """ EXTRACT THE TRAINING DATA """
     # get the list of ('class', 'training instance') pairs
+    with open(WSD_TRAIN, 'r') as f:
+        examples = list(csv.reader(f, delimiter='\t'))
+
+    """ EXTRACT THE DEV DATA """
     with open(WSD_TRAIN, 'r') as f:
         examples = list(csv.reader(f, delimiter='\t'))
 

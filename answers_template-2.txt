@@ -13,25 +13,25 @@ Part 1)
 
 ---------------------------------------------------------------------------------
 Part 2)
-1- 
+1-
 
 s   | cord | division   | formation | phone | product | text
 -----------------------------------------------------------------
-c(s)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+c(s)|  268 |   251      |    250    |  305  |   1505  |  283
 
 
 s        | cord | division   | formation | phone | product | text
 -----------------------------------------------------------------
-c(s,time)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+c(s,time)|  12  |    8       |    14     |  12   |    29   |  13
 
 s        | cord | division   | formation | phone | product | text
 -----------------------------------------------------------------
-c(s,loss)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+c(s,loss)|   1  |    0       |    0      |  2    |    19   |  0
 
 
 s          | cord | division   | formation | phone | product | text
 ---------------------------------------------------------------------
-c(s,export)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+c(s,export)|   0  |    0       |    0      |   1   |    2    |  0
 
 
 
@@ -39,21 +39,21 @@ c(s,export)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
 
 s   | cord | division   | formation | phone | product | text
 -----------------------------------------------------------------
-p(s)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+p(s)| .094 |   .088     |   .087    | .107  |  .526   | .099
 
 
-s        | cord | division   | formation | phone | product | text
------------------------------------------------------------------
-p(s|time)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+s        |  cord   | division   | formation |  phone  | product |  text
+-------------------------------------------------------------------------
+p(s|time)| 1.03e-3 |  6.83e-4   |  1.25e-3  | 8.83e-4 | 4.21e-4 | 9.86e-4
 
-s        | cord | division   | formation | phone | product | text
------------------------------------------------------------------
-p(s|loss)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+s        |   cord  | division   | formation |  phone  | product | text
+------------------------------------------------------------------------
+p(s|loss)| 7.89e-5 |    0       |    0      | 1.47e-4 | 2.76e-4 |  0
 
 
-s          | cord | division   | formation | phone | product | text
+s          | cord | division   | formation |  phone  | product | text
 ---------------------------------------------------------------------
-p(s|export)|   ?  |    ?       |    ?      |  ?    |    ?    |    ?
+p(s|export)|   0  |    0       |    0      | 7.36e-5 | 2.90e-5 |  0
 
 
 3- for the sentence X = "and i can tell you that i 'm an absolute nervous wreck every time she performs . i have her practice the last two lines on each page , so I can learn exactly when to turn the page -- just one of the tricks to this trade that i 've learned the hard way ."

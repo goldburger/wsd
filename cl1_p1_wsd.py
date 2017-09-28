@@ -3,7 +3,18 @@ CMSC723 / INST725 / LING723 -- Fall 2016
 Project 1: Implementing Word Sense Disambiguation Systems
 """
 
+from __future__ import division
+
+import math
+from math import log
+import numpy
+from sklearn.feature_extraction.text import CountVectorizer
 from collections import defaultdict
+from collections import Counter
+from scipy.stats import norm
+from functools import partial
+from nltk import word_tokenize
+from nltk import sent_tokenize
 from random import shuffle
 
 """
@@ -38,7 +49,7 @@ def read_dataset(subset):
 				texts.append(text)
 		return (labels, targets, texts)
 	else:
-		print '>>>> invalid input !!! <<<<<'
+		print ('>>>> invalid input !!! <<<<<')
 
 """
 computes f1-score of the classification accuracy
@@ -65,6 +76,135 @@ def write_predictions(predictions, file_name):
 		for p in predictions:
 			outh.write(p+'\n')
 
+
+# The Bayes class goes here
+# import csv
+# import numpy
+# from math import log
+# from sklearn.feature_extraction.text import CountVectorizer
+# from collections import Counter
+# from collections import defaultdict
+# from nltk import sent_tokenize
+
+# Constant declarations
+WSD_TRAIN = 'data/wsd_train.txt'
+WSD_DEV = 'data/wsd_dev.txt'
+WSD_TEST = 'data/wsd_test.txt'
+
+
+class Bayes2:
+    # Fields:
+    #    classes, prior, theta, vectorizer
+
+    def __init__(self, train_labels, train_texts, wd_len=False, sn_len=False):
+        # Extract the data
+        # with open(WSD_TRAIN, 'r') as f:
+        #     train_pairs = list(csv.reader(f, delimiter='\t'))
+        #     [train_labels, train_texts] = [list(t) for t in zip(*train_pairs)]
+        tokenized_train_texts = train_texts
+        train_texts = [" ".join(text) for text in train_texts]
+        train_pairs = zip(train_labels, train_texts)
+
+        # Compute class data and priors
+        self.classes = set(train_labels)
+        class_counts = Counter(train_labels)
+        self.prior = {c: -log(class_counts[c] / len(train_labels), 2) \
+                      for c in self.classes}
+
+        # Divide the training data into classes
+        texts = defaultdict(list)
+        tokenized_texts = defaultdict(list)
+        self.sentences = defaultdict(list)
+        for (label, text)  in train_pairs:
+            texts[label].append(text)
+            self.sentences[label] += sent_tokenize(text)
+        for (label, text) in zip(train_labels, tokenized_train_texts):
+            tokenized_texts[label] += text
+
+        for c in self.classes:
+            self.sentences[c] = list(map(lambda s: word_tokenize(s), self.sentences[c]))
+            
+    
+        # Vectorize the training data per class
+        # (note that these vectorizers expect a document string *in* an iterable)
+        self.vectorizer = {c: CountVectorizer() for c in self.classes}
+        # 'fv' for feature vector, 'fc' for feature count
+        fvs_by_class = {c: self.vectorizer[c].fit_transform(texts[c]).toarray() \
+                        for c in self.classes}
+
+        # Compute feature counts per class and likelihoods
+        fcs_by_class = {c: numpy.sum(fvs_by_class[c], axis=0) \
+                        for c in self.classes}
+        doclen = {c: numpy.sum(fcs_by_class[c]) for c in self.classes}
+        
+        self.theta = {c: numpy.negative(numpy.log2(fcs_by_class[c] / doclen[c])) \
+                      for c in self.classes}
+
+
+        # Compute likelihoods for extra features, if desired
+        self.theta_wd_len = defaultdict(int)
+        self.theta_sn_len = defaultdict(int)
+        
+        if wd_len:
+            for c in self.classes:
+                word_lens = list(map(lambda w: len(w), tokenized_texts[c]))
+                # get mu, std
+                self.theta_wd_len[c] = norm.fit(word_lens)
+
+        if sn_len:
+            for c in self.classes:
+                sn_lens = list(map(lambda s: len(s), self.sentences[c]))
+                # get mu, std
+                self.theta_sn_len[c] = norm.fit(sn_lens)
+
+
+# Classify
+def vectorize(bayes, example, clazz):
+    if not clazz in bayes.classes:
+        raise Exception
+    
+    if not isinstance(example, str):
+        example = " ".join(example)
+
+    return bayes.vectorizer[clazz].transform([example]).toarray()
+
+def predict(bayes, example):
+    """ example : numpy.array """
+    (max, argmax) = (0, None)
+
+    for c in bayes.classes:
+        fv = vectorize(bayes, example, c)
+        likelihood_bow = numpy.dot(fv, bayes.theta[c])[0]
+        likelihood_wd_len = -log(norm.pdf(avg_wd_len(example), *bayes.theta_wd_len[c]), 2)
+        likelihood_sn_len = -log(norm.pdf(avg_sn_len(example), *bayes.theta_sn_len[c]), 2)
+        posterior = bayes.prior[c] + likelihood_bow + likelihood_wd_len + likelihood_sn_len
+        
+        if posterior > max:
+            max = posterior
+            argmax = c
+
+    return argmax
+
+def classify(bayes, examples):
+    return [predict(bayes, example) for example in examples]
+
+def avg_wd_len(example):
+    wd_lens = map(lambda w: len(w), example)
+    return sum(wd_lens) / len(example)
+
+def avg_sn_len(example):
+    # example is, unfortunately, a single string
+    los = sent_tokenize(" ".join(example)) # first break it into sentence strings
+    lol = list(map(lambda s: word_tokenize(s), los)) # then break them into lists
+    sn_lens = list(map(lambda sn: len(sn), lol))
+    return sum(sn_lens) / len(los)
+    
+
+def get_bow_naivebayes_training_scores(train_texts, train_labels, dev_texts, dev_labels):
+        classifier = Bayes2(train_labels, train_texts, True, True)
+        predictions = classify(classifier, train_texts)
+        return eval(train_labels, predictions)
+
 """
 Trains a naive bayes model with bag of words features and computes the accuracy on the test set
 
@@ -73,11 +213,9 @@ The same thing applies to the reset of the parameters.
 """
 def run_bow_naivebayes_classifier(train_texts, train_targets, train_labels, 
 				dev_texts, dev_targets,dev_labels, test_texts, test_targets, test_labels):
-	
-	"""
-	**Your final classifier implementation of part 2 goes here**
-	"""
-	pass
+        classifier = Bayes2(train_labels, train_texts, False, False)
+        predictions = classify(classifier, test_texts)
+        return eval(test_labels, predictions)
 
 
 # Creates bags of words for a set from the original lists of sentence words
@@ -155,20 +293,20 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
         for word in m[sense]:
           m_temp[sense][word] = m[sense][word] + theta[sense][word] * (counter - m_last_updated[sense][word])
           theta_temp[sense][word] = m_temp[sense][word] / counter
-      print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
+      print ("Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow))))
 
       test_results_prev = test_results
       predicted_labels_prev = predicted_labels
       predicted_labels = predict_labels(senses, theta_temp, test_bow)
       test_results = eval(test_labels, predicted_labels)
 
-      print "Result on test set: " + str(test_results)
+      print ("Result on test set: " + str(test_results))
 
       # Stopping condition when previous results exceed current
       # Rolls back to previous results and halts in such a case
       if (test_results_prev[0] > test_results[0]):
-        print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
-        print "Final test accuracy: " + str(test_results_prev)
+        print ("Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping.")
+        print ("Final test accuracy: " + str(test_results_prev))
         write_predictions(predicted_labels_prev, "q3p3.txt")
         return test_results_prev
 
@@ -213,10 +351,9 @@ The same thing applies to the reset of the parameters.
 """
 def run_extended_bow_naivebayes_classifier(train_texts, train_targets,train_labels, 
 				dev_texts, dev_targets,dev_labels, test_texts, test_targets, test_labels):
-	"""
-	**Your final implementation of Part 4 with perceptron classifier**
-	"""
-	pass
+        classifier = Bayes2(train_labels, train_texts, True, True)
+        predictions = classify(classifier, test_texts)
+        return eval(test_labels, predictions)
 
 """
 Trains a perceptron model with bag of words features  + two additional features 
@@ -241,8 +378,14 @@ if __name__ == "__main__":
     test_labels, test_targets, test_texts = read_dataset('test')
 
     #running the classifier
-    #test_scores = run_bow_naivebayes_classifier(train_texts, train_targets, train_labels, 
-		#		dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
+    training_scores = get_bow_naivebayes_training_scores(train_texts, train_labels, dev_texts, dev_labels)
+    test_scores = run_bow_naivebayes_classifier(train_texts, train_targets, train_labels, 
+				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
+
+    print ("Naive Bayes training scores:\t" + str(training_scores))
+    print ("Naive Bayes test scores:\t" + str(test_scores) + "\n")
+    # print ("Extended(1,0) Naive Bayes test scores:\t" + str(test_scores) + "\n")
+    
     test_scores = run_bow_perceptron_classifier(train_texts, train_targets, train_labels, 
 				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
 
