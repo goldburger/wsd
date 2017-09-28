@@ -155,20 +155,20 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
         for word in m[sense]:
           m_temp[sense][word] = m[sense][word] + theta[sense][word] * (counter - m_last_updated[sense][word])
           theta_temp[sense][word] = m_temp[sense][word] / counter
-      print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
+      #print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
 
       test_results_prev = test_results
       predicted_labels_prev = predicted_labels
       predicted_labels = predict_labels(senses, theta_temp, test_bow)
       test_results = eval(test_labels, predicted_labels)
 
-      print "Result on test set: " + str(test_results)
+      #print "Result on test set: " + str(test_results)
 
       # Stopping condition when previous results exceed current
       # Rolls back to previous results and halts in such a case
       if (test_results_prev[0] > test_results[0]):
-        print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
-        print "Final test accuracy: " + str(test_results_prev)
+        #print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
+        #print "Final test accuracy: " + str(test_results_prev)
         write_predictions(predicted_labels_prev, "q3p3.txt")
         return test_results_prev
 
@@ -248,7 +248,7 @@ The same thing applies to the reset of the parameters.
 def run_extended_bow_perceptron_classifier(train_texts, train_targets,train_labels, 
 				dev_texts, dev_targets,dev_labels, test_texts, test_targets, test_labels):
 
-  extra_1 = False
+  extra_1 = True
   extra_2 = True
 
   senses = set(train_labels)
@@ -276,11 +276,11 @@ def run_extended_bow_perceptron_classifier(train_texts, train_targets,train_labe
   train_bow = make_bow(train_texts)
   # Insertion of extra feature 1, if enabled
   if (extra_1):
-    print "Extra feature 1 enabled."
+    #print "Extra feature 1 enabled."
     for bow in train_bow:
       bow["extra 1"] += average_word_len(bow)
   if (extra_2):
-    print "Extra feature 2 enabled."
+    #print "Extra feature 2 enabled."
     for bow in train_bow:
       bow["extra 2"] += inverse_sentence_len(bow, train_maxlen)
   test_bow = make_bow(test_texts)
@@ -317,21 +317,21 @@ def run_extended_bow_perceptron_classifier(train_texts, train_targets,train_labe
         for word in m[sense]:
           m_temp[sense][word] = m[sense][word] + theta[sense][word] * (counter - m_last_updated[sense][word])
           theta_temp[sense][word] = m_temp[sense][word] / counter
-      print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
+      #print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
 
       test_results_prev = test_results
       predicted_labels_prev = predicted_labels
       predicted_labels = predict_labels(senses, theta_temp, test_bow)
       test_results = eval(test_labels, predicted_labels)
 
-      print "Result on test set: " + str(test_results)
+      #print "Result on test set: " + str(test_results)
 
       # Stopping condition when previous results exceed current
       # Rolls back to previous results and halts in such a case
       if (test_results_prev[0] > test_results[0]):
-        print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
-        print "Final test accuracy: " + str(test_results_prev)
-        write_predictions(predicted_labels_prev, "q3p3.txt")
+        #print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
+        #print "Final test accuracy: " + str(test_results_prev)
+        write_predictions(predicted_labels_prev, "q4p4_pn.txt")
         return test_results_prev
 
       shuffle(indices)
@@ -377,4 +377,4 @@ if __name__ == "__main__":
     test_scores = run_extended_bow_perceptron_classifier(train_texts, train_targets, train_labels, 
 				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
 
-    #print test_scores
+    print test_scores
