@@ -1,15 +1,15 @@
 Team: 
-1- 
-2- 
-3-
+1- Aquia Richburg
+2- Samuel Barham
+3- Matthew Goldberg
 
 Email: 
 
 ---------------------------------------------------------------------------------
 Part 1)
 
-1- baseline accuracy = ?%
-2- Cohen’s Kappa = ?
+1- baseline accuracy = 0.5554
+2- Cohen’s Kappa = 0.9315
 
 ---------------------------------------------------------------------------------
 Part 2)
@@ -71,42 +71,42 @@ macro averaged =
 ---------------------------------------------------------------------------------
 Part 3)
 
-1- 
-2- comma separated accuracies (e.g. 30,35,60): 
+1- cord_and:-1, text_and:1, cord_managed:-1, text_managed:1, cord_ah:-1, text_ah:1, cord_an:-1, text_an:1, cord_down:-1, text_down:1, cord_jean-jacques:-1, text_jean-jacques:1, cord_another:-1, text_another:1, cord_in:-1, text_in:1, cord_sits:-1, text_sits:1, cord_harp:-1, text_harp:1, cord_!:-1, text_!:1, cord_little:-1, text_little:1, cord_her:-2, text_her:2, cord_pet:-1, text_pet:1, cord_with:-1, text_with:1, cord_hauer:-1, text_hauer:1, cord_wordsworth:-1, text_wordsworth:1, cord_,:-3, text_,:3, cord_liberty:-1, text_liberty:1, cord_.:-1, text_.:1, cord_to:-2, text_to:2, cord_rolland:-1, text_rolland:1, cord_before:-1, text_before:1, cord_friend:-1, text_friend:1, cord_shows:-1, text_shows:1, cord_``:-1, text_``:1, cord_plank:-1, text_plank:1, cord_who:-1, text_who:1, cord_french:-1, text_french:1, cord_much-quoted:-1, text_much-quoted:1, cord_tied:-1, text_tied:1, cord_not:-1, text_not:1, cord_line:-1, text_line:1, cord_lady:-1, text_lady:1, cord_by:-1, text_by:1, cord_plucky:-1, text_plucky:1, cord_a:-1, text_a:1, cord_last:-1, text_last:1, cord_room:-1, text_room:1, cord_did:-1, text_did:1, cord_of:-1, text_of:1, cord_dog:-1, text_dog:1, cord_madame:-1, text_madame:1, cord_lafayette:-1, text_lafayette:1, cord_she:-1, text_she:1, cord_the:-2, text_the:2, cord_painting:-1, text_painting:1, cord_drawing:-1, text_drawing:1, cord_exquisite:-1, text_exquisite:1
+2- comma separated accuracies (e.g. 30,35,60): 0.83321847002067539,0.91592005513439012,0.95210199862164024,0.97381116471399032,0.98828394210889037,0.99207443142660234,0.9955203308063405
 3- classifier f-measures on the test set:
-micro averaged = 
-macro averaged = 
-4- 
+micro averaged = 0.8362760834670947
+macro averaged = 0.74184260469102759
+4- Overall, the perceptron follows the averaged perceptron pseudocode provided in the lecture slides. However, the following design decisions were made for coding the perceptron. First, the order in which training set sentences are selected was the following: the first time that the perceptron runs, each training set sentence is processed in the original order of the train_texts list; after each sentence has been processed, a list of indices is randomized such that the perceptron will subsequently learn by examining each training sentence once in the new randomized order. Hence, the training set is processed repeatedly in a random order. A second implementation choice was made in representing the sparse vectors of the bags of words. This was implemented using Python defaultdicts of ints, which allowed implicit representation of counts of zero for words in the vocabulary not appearing in a sentence for a given bag of words. Similarly, zero-valued entries in the weight vector theta were also implict due to use of a defaultdict for theta as well. The use of a constant-time access structure like a dict also allowed for fast accesses to bags of words when obtaining the score for a given sentence. The choice for when to stop the perceptron was based on when the accuracy on the test set would begin to decrease. After each time of training on and running through the whole training set, the perceptron would calculate its accuracy on the test set. If the values had decreased since the last check on the test set, the perceptron would roll back to the previous, maximal result for the training set. Finally, an implementation choice was made in how the values for the vectors theta and m (using the names from perceptron slide 16) were updated -- rather than updating every vocabulary word weight in m for each training example, it was noted that in the case of words not appearing in the currently examined bag of words, an update to their entry in m would only update with an unchanged entry of theta. Thus instead of doing such additions each iteration, for such entries of m a count is stored for how long it's been since the last update, and when that entry later changes the theta contribution is multiplied by the time since last update, before being added. This makes updates to m occur in time proportional to the sentence length and not the vocabulary, giving a signficant speedup.
 ---------------------------------------------------------------------------------
 Part 4)
-A) Feature A:
+A) Feature A: Average word length
 
-1- Description
-
-2- naive-bayes f-measures on the test set:
-micro averaged = 
-macro averaged = 
-
-3- perceptron f-measures on the test set:
-micro averaged = 
-macro averaged = 
-
-
-4- Conclusions:
-
-B) Feature B:
-
-1- Description
+1- Description: We suspected that average word length may be associated with particular styles, registers, or contexts of language that may help indicate contexts in which the word "line" would take different roles. For example, our intution was that there could be cases such as the possibility of "product" senses of line potentially having longer words due to the use of business terminology or jargon, while some of the other senses may have lower associated average word length. Hence, this seemed a candidate for contributing to better disambiguating the given senses. [Expand as needed, Sam?]
 
 2- naive-bayes f-measures on the test set:
 micro averaged = 
 macro averaged = 
 
 3- perceptron f-measures on the test set:
+micro averaged = 0.8250401284109149
+macro averaged = 0.72288951908617172
+
+
+4- Conclusions: For the perceptron, this feature did not appear to have a particularly discernable difference, as several runs gave micro-averaged f1 score of roughly 80%, similar to the averaged perceptron without the feature. For adding it to naive bayes [... take it from here Sam ...] Overall, the feature therefore appeared to [...]
+
+B) Feature B: Inverse sentence length
+
+1- Description: Our intuition in this case was that shorter sentences may be associated with having each word contribute more information about the sense of "line" for disambiguation, due to having fewer extraneous terms unrelated to that sense. Conversely, longer sentences seem to potentially have more unrelated words, such as in tangential clauses that are rarer in shorter sentences. We therefore would use an inverse sentence length of sorts, by adding a weight to the feature vector based on the maximum sentence length of a training set minus the length in words of a current sentence, to attempt to capture this intuition. [ Expand? Clarify? ]
+
+2- naive-bayes f-measures on the test set:
 micro averaged = 
 macro averaged = 
 
+3- perceptron f-measures on the test set:
+micro averaged = 0.6597110754414125
+macro averaged = 0.41353012026357067
 
-4- Conclusions:
+
+4- Conclusions: This feature had a notable degradation of performance for the perceptron, decreasing micro-averaged f1 score from the original 80% or so down to 65%. [... take it from here Sam ...] [following assumes it sucks for naive bayes too; modify next sentence if not the case] As such, the intuition that inverse sentence length may have been a useful feature appears to have decidedly not been borne out by testing. It appears to be an actively counterproductive feature to use.
 
 
