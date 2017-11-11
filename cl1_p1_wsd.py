@@ -222,16 +222,16 @@ def run_bow_naivebayes_classifier(train_texts, train_targets, train_labels,
 def make_bow(texts):
   bow = []
   for text in texts:
-    next_bow = defaultdict(int)
+    next_bow = defaultdict(float)
     for word in text:
-      next_bow[word] += 1
+      next_bow[word] += 1.
     bow.append(next_bow)
   return bow
 
 def predict_labels(senses, theta, bow):
   labels = []
   for i in range(0, len(bow)):
-    scoring = defaultdict(int)
+    scoring = defaultdict(float)
     for sense in senses:
       for word in bow[i]:
         scoring[sense] += bow[i][word] * theta[sense][word]
@@ -260,9 +260,9 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
   m = dict()
   m_last_updated = dict()
   for sense in senses:
-    theta[sense] = defaultdict(int)
-    m[sense] = defaultdict(int)
-    m_last_updated[sense] = defaultdict(int)
+    theta[sense] = defaultdict(float)
+    m[sense] = defaultdict(float)
+    m_last_updated[sense] = defaultdict(float)
 
   # Create training and test bags of words collection
   train_bow = make_bow(train_texts)
@@ -287,34 +287,34 @@ def run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
       m_temp = dict()
       theta_temp = dict()
       for sense in senses:
-        m_temp[sense] = defaultdict(int)
-        theta_temp[sense] = defaultdict(int)
+        m_temp[sense] = defaultdict(float)
+        theta_temp[sense] = defaultdict(float)
         # Obtain weights from running average before evaluating
         for word in m[sense]:
           m_temp[sense][word] = m[sense][word] + theta[sense][word] * (counter - m_last_updated[sense][word])
           theta_temp[sense][word] = m_temp[sense][word] / counter
-      #print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
+      print "Results on training set: " + str(eval(train_labels, predict_labels(senses, theta_temp, train_bow)))
 
       test_results_prev = test_results
       predicted_labels_prev = predicted_labels
       predicted_labels = predict_labels(senses, theta_temp, test_bow)
       test_results = eval(test_labels, predicted_labels)
 
-      #print "Result on test set: " + str(test_results)
+      print "Result on test set: " + str(test_results)
 
       # Stopping condition when previous results exceed current
       # Rolls back to previous results and halts in such a case
       if (test_results_prev[0] > test_results[0]):
-        #print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
-        #print "Final test accuracy: " + str(test_results_prev)
-        write_predictions(predicted_labels_prev, "q3p3.txt")
+        print "Previous test result of " + str(test_results_prev) + " exceeded current; rolling back to previous and stopping."
+        print "Final test accuracy: " + str(test_results_prev)
+        #write_predictions(predicted_labels_prev, "q3p3.txt")
         return test_results_prev
 
       shuffle(indices)
     index = indices[counter % len(indices)]
 
     # Obtain predicted from argmax of scores for each class
-    scoring = defaultdict(int)
+    scoring = defaultdict(float)
     for sense in senses:
       for word in train_bow[index]:
         scoring[sense] += train_bow[index][word] * theta[sense][word]
@@ -508,16 +508,16 @@ if __name__ == "__main__":
     dev_labels, dev_targets, dev_texts = read_dataset('dev')
     test_labels, test_targets, test_texts = read_dataset('test')
 
-    #running the classifier
-    training_scores = get_bow_naivebayes_training_scores(train_texts, train_labels, dev_texts, dev_labels)
-    test_scores = run_bow_naivebayes_classifier(train_texts, train_targets, train_labels, 
-				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
+    ##running the classifier
+    #training_scores = get_bow_naivebayes_training_scores(train_texts, train_labels, dev_texts, dev_labels)
+    #test_scores = run_bow_naivebayes_classifier(train_texts, train_targets, train_labels, 
+		#		dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
 
-    print ("Naive Bayes training scores:\t" + str(training_scores))
-    print ("Naive Bayes test scores:\t" + str(test_scores) + "\n")
-    # print ("Extended(1,0) Naive Bayes test scores:\t" + str(test_scores) + "\n")
+    #print ("Naive Bayes training scores:\t" + str(training_scores))
+    #print ("Naive Bayes test scores:\t" + str(test_scores) + "\n")
+    #print ("Extended(1,0) Naive Bayes test scores:\t" + str(test_scores) + "\n")
     
-    test_scores = run_extended_bow_perceptron_classifier(train_texts, train_targets, train_labels,
+    test_scores = run_bow_perceptron_classifier(train_texts, train_targets, train_labels,
 				dev_texts, dev_targets, dev_labels, test_texts, test_targets, test_labels)
 
     print test_scores
